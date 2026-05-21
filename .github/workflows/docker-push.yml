@@ -51,7 +51,7 @@ jobs:
   
   deploy:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v')
+    # if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo with k8s manifests
@@ -62,14 +62,12 @@ jobs:
           sparse-checkout: src/app-config
       
       - name: Get inventory.ini
-        uses: Legit-Labs/action-download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: terraform-pr.yml
-          workflow_conclusion: success
-          branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           name: inventory.ini
-          repo: RiteHist/devops-diploma
+          repository: RiteHist/devops-diploma
+          run-id: ${{ vars.TERRAFORM_RUN_ID }}
       
       - name: Parse controller and NAT IPs
         id: ips
