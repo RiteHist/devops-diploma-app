@@ -69,7 +69,7 @@ jobs:
           workflow_conclusion: success
           branch: main
           name: inventory.ini
-          repo: ritehist/devops-diploma
+          repo: RiteHist/devops-diploma
       
       - name: Parse controller and NAT IPs
         id: ips
