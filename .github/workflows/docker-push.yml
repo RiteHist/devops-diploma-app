@@ -128,7 +128,7 @@ jobs:
         uses: azure/k8s-set-context@v5
         with:
           method: kubeconfig
-          kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
+          kubeconfig: admin.conf
       
       - name: Deploy manifest
         uses: Azure/k8s-deploy@v5
