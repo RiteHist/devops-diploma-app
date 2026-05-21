@@ -114,6 +114,7 @@ jobs:
           kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
       
       - name: Deploy manifest
+        uses: Azure/k8s-deploy@v5
         with:
           manifests: src/app-config/1-deployment.yaml
           images: ${{ needs.build.outputs.tags }}
