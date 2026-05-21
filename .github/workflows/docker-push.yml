@@ -70,6 +70,7 @@ jobs:
           branch: main
           name: inventory.ini
           repo: RiteHist/devops-diploma
+          use_unzip: true
       
       - name: Parse controller and NAT IPs
         id: ips
