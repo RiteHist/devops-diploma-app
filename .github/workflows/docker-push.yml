@@ -47,6 +47,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
       
+      # Export only the latest tag for the deployment job
       - name: Export image tags
         id: export
         run: |
@@ -65,6 +66,7 @@ jobs:
           ref: 'main'
           sparse-checkout: src/app-config
       
+      # Currently, the action dawidd6/action-download-artifact doesn't seems to work correctly for me (and i can't find any info for that error, aside from an open issue at their repo), so i have to use the official action for downloading artifacts and sadly this one can't just download artifacts from a last succesful workflow and needs a runs id to function (and i'm too lazy to write my own script that just looks it up)
       - name: Get inventory.ini
         uses: actions/download-artifact@v8
         with:
@@ -81,7 +83,6 @@ jobs:
           echo "nat_ip=$NAT_IP" >> $GITHUB_OUTPUT
           echo "controller_ip=$CONTROLLER_IP" >> $GITHUB_OUTPUT
         
-      
       - name: Create ssh key file
         run: |
           mkdir -p ~/.ssh
