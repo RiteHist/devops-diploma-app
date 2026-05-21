@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      tags: ${{ steps.meta.outputs.tags }}
+      image_tag: ${{ steps.export.outputs.tag }}
     permissions:
       contents: read
     
@@ -49,7 +49,9 @@ jobs:
       
       - name: Export image tags
         id: export
-        run: 'echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT'
+        run: |
+          TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
   
   deploy:
     needs: build
@@ -132,5 +134,5 @@ jobs:
         uses: Azure/k8s-deploy@v5
         with:
           manifests: src/app-config/1-deployment.yaml
-          images: ${{ needs.build.outputs.tags }}
+          images: ${{ needs.build.outputs.image_tag }}
           action: deploy
