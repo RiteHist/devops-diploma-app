@@ -118,7 +118,7 @@ jobs:
         id: kubeconfig
         run: |
           CONFIG_CONTENT=$(cat admin.conf | base64 -w 0)
-          echo ""::add-mask::$CONFIG_CONTENT"
+          echo "::add-mask::$CONFIG_CONTENT"
           echo "kubeconfig=$CONFIG_CONTENT" >> $GITHUB_OUTPUT
       
       - name: Setup kubectl
