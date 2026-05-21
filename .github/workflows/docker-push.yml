@@ -47,7 +47,7 @@ jobs:
       
       - name: Export image tags
         id: export
-        run: echo "tags=${{ steps.meta.outputs.tags }} >> $GITHUB_OUTPUT"
+        run: echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT
   
   deploy:
     needs: build
@@ -102,7 +102,7 @@ jobs:
           NAT_IP: ${{ steps.ips.outputs.nat_ip }}
           CONTROLLER_IP: ${{ steps.ips.outputs.controller_ip }}
         run: |
-          scp -o ProxyJump=${{ vars.VM_USERNAME }}@${NAT_IP} ${{ vars.VM_USERNAME }}@${CONTROLLER_IP}:/etc/kubernetes/admin.conf ./
+          ssh -o ProxyJump=${{ vars.VM_USERNAME }}@${NAT_IP} ${{ vars.VM_USERNAME }}@${CONTROLLER_IP} "sudo cat /etc/kubernetes/admin.conf" > admin.conf
       
       - name: Change server in admin.conf
         env:
