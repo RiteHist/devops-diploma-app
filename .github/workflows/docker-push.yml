@@ -86,8 +86,8 @@ jobs:
           proxy_host: ${{ steps.ips.outputs.nat_ip }}
           proxy_username: ${{ vars.VM_USERNAME }}
           proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: /etc/kubernetes/admin.conf
-          target: ./
+          source: "/etc/kubernetes/admin.conf"
+          target: "./"
       
       - name: Change server in admin.conf
         env:
