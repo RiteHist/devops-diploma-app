@@ -62,7 +62,7 @@ jobs:
           sparse-checkout: src/app-config
       
       - name: Get inventory.ini
-        uses: dawidd6/action-download-artifact@v21
+        uses: Legit-Labs/action-download-artifact@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: terraform-pr.yml
@@ -70,7 +70,6 @@ jobs:
           branch: main
           name: inventory.ini
           repo: RiteHist/devops-diploma
-          use_unzip: true
       
       - name: Parse controller and NAT IPs
         id: ips
