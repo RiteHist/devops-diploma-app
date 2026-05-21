@@ -62,7 +62,7 @@ jobs:
           sparse-checkout: src/app-config
       
       - name: Get inventory.ini
-        uses: Legit-Labs/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v21
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           workflow: terraform-pr.yml
