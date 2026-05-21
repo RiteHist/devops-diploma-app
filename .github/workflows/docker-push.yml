@@ -114,15 +114,6 @@ jobs:
         run: |
           sed -i "s|server: https://[^:]*:6443|server: https://${NAT_IP}:6443|" admin.conf
       
-      - name: Debug admin.conf
-        run: |
-          echo "=== File size ==="
-          ls -l admin.conf
-          echo "=== First 10 lines ==="
-          head -n 10 admin.conf
-          echo "=== Last 5 lines ==="
-          tail -n 5 admin.conf
-      
       - name: Get admin.conf content
         id: kubeconfig
         run: |
@@ -138,6 +129,7 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
+          kubeconfig-encoding: base64
       
       - name: Deploy manifest
         uses: Azure/k8s-deploy@v5
