@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
     permissions:
       contents: read
     
@@ -47,7 +49,7 @@ jobs:
       
       - name: Export image tags
         id: export
-        run: echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT
+        run: 'echo "tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT'
   
   deploy:
     needs: build
