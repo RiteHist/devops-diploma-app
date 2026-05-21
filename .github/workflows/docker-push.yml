@@ -14,7 +14,7 @@ jobs:
     
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -44,3 +44,77 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      
+      - name: Export image tags
+        id: export
+        run: echo "tags=${{ steps.meta.outputs.tags }} >> $GITHUB_OUTPUT"
+  
+  deploy:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo with k8s manifests
+        uses: actions/checkout@v6
+        with:
+          repository: ritehist/devops-diploma-kube
+          ref: 'main'
+          sparse-checkout: src/app-config
+      
+      - name: Get inventory.ini
+        uses: Legit-Labs/action-download-artifact@v2
+        with:
+          github_token: ${{ github.token }}
+          workflow: terraform-pr.yml
+          workflow_conclusion: success
+          branch: main
+          name: inventory.ini
+          repo: ritehist/devops-diploma
+      
+      - name: Parse controller and NAT IPs
+        id: ips
+        run: |
+          NAT_IP=$(awk '/\[bastion\]/ {flag=1; next} flag && /ansible_host=/ {gsub(/.*=/,""); print; flag=0}' inventory.ini)
+          CONTROLLER_IP=$(awk '/\[kube_control_plane\]/ {flag=1; next} flag && /ansible_host=/ {gsub(/.*=/,""); print; flag=0}' inventory.ini)
+          echo "nat_ip=$NAT_IP" >> $GITHUB_OUTPUT
+          echo "controller_ip=$CONTROLLER_IP" >> $GITHUB_OUTPUT
+      
+      - name: Copy admin.conf from controller
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ steps.ips.outputs.controller_ip}}
+          username: ${{ vars.VM_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          proxy_host: ${{ steps.ips.outputs.nat_ip }}
+          proxy_username: ${{ vars.VM_USERNAME }}
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: /etc/kubernetes/admin.conf
+          target: ./
+      
+      - name: Change server in admin.conf
+        env:
+          NAT_IP: ${{ steps.ips.outputs.nat_ip }}
+        run: |
+          sed -i "s|server: https://[^:]*:6443|server: https://${NAT_IP}:6443|" admin.conf
+      
+      - name: Get admin.conf content
+        id: kubeconfig
+        run: |
+          CONFIG_CONTENT=$(cat admin.conf | base64 -w 0)
+          echo ""::add-mask::$CONFIG_CONTENT"
+          echo "kubeconfig=$CONFIG_CONTENT" >> $GITHUB_OUTPUT
+      
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+      
+      - name: Set kube context
+        uses: azure/k8s-set-context@v5
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ steps.kubeconfig.outputs.kubeconfig }}
+      
+      - name: Deploy manifest
+        with:
+          manifests: src/app-config/1-deployment.yaml
+          images: ${{ needs.build.outputs.tags }}
+          action: deploy
